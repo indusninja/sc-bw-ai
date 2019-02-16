@@ -1,0 +1,7 @@
+Q-LEARNING TODO:
+==================
+- Inputs - Optimization
+- Attack movement - make new attack command logic (interuptable if attacked, other wise seek and attack)
+- E-Greedy
+- Implement game Timer
+- If alive TOO long, then increase the exploration rate

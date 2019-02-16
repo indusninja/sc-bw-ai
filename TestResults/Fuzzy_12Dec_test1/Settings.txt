@@ -1,0 +1,19 @@
+	// INPUTS
+        LinguisticVariable lvDeltaHealth( "DeltaHealth", 0.0, 1.0 );
+        // |__+++!*****|
+	    lvDeltaHealth.addFuzzySet( "High",	TrapezoidalFunction( 0.7, 0.8, TrapezoidalFunction::LeftEdge ) );
+    	
+	    LinguisticVariable lvHealth( "Health", 0, 1.0 );
+        // 
+	    lvHealth.addFuzzySet( "Danger",		TrapezoidalFunction( 0.3, 0.5, TrapezoidalFunction::RightEdge ) );
+
+        // OUTPUT
+        LinguisticVariable lvStance ( "Stance", 0.0, 1.0 );
+        // |****+!+____|
+        lvStance.addFuzzySet( "Attack",	    TrapezoidalFunction( 0.4, 0.6, TrapezoidalFunction::RightEdge ) );
+        // |____+!+****|
+        lvStance.addFuzzySet( "Retreat",	TrapezoidalFunction( 0.4, 0.6, TrapezoidalFunction::LeftEdge ) );
+
+
+IF DeltaHealth IS High AND Health IS Danger THEN Stance IS Retreat
+IF Health IS NOT Danger THEN Stance IS ATTACK

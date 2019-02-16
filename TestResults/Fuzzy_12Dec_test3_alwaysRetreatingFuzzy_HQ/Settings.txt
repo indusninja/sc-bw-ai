@@ -1,0 +1,35 @@
+// create FuzzySystem
+        m_pFuzzySystem = new FuzzySystem();
+
+        // === linguistic variables and sets ===
+        // INPUTS
+        LinguisticVariable lvDeltaHealth( "DeltaHealth", 0.0, 1.0 );
+        // |__+++!*****|
+	    lvDeltaHealth.addFuzzySet( "High",	TrapezoidalFunction( 0.00001, 0.1, TrapezoidalFunction::LeftEdge ) );
+    	
+	    LinguisticVariable lvHealth( "Health", 0, 1.0 );
+        // 
+	    lvHealth.addFuzzySet( "Danger",		TrapezoidalFunction( 0.9, 0.99, TrapezoidalFunction::RightEdge ) );
+
+        // OUTPUT
+        LinguisticVariable lvStance ( "Stance", 0.0, 1.0 );
+        // |****+!+____|
+        lvStance.addFuzzySet( "Attack",	    TrapezoidalFunction( 0.4, 0.6, TrapezoidalFunction::RightEdge ) );
+        // |____+!+****|
+        lvStance.addFuzzySet( "Retreat",	TrapezoidalFunction( 0.4, 0.6, TrapezoidalFunction::LeftEdge ) );
+
+
+        // addVariables
+        m_pFuzzySystem->addVariable( lvDeltaHealth );
+        m_pFuzzySystem->addVariable( lvHealth );
+        m_pFuzzySystem->addVariable( lvStance );
+
+
+        // RULES
+
+		// IF DeltaHealth IS High AND Health IS Danger THEN Stance IS Retreat
+        RuleStack rule1;
+        rule1.add( Clause( "DeltaHealth", "High" ) );
+        rule1.add( ANDOperator() );
+        rule1.add( Clause( "Health", "Danger" ) );
+		rule1.setThen( Clause( "Stance", "Retreat" ) );

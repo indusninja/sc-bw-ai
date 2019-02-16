@@ -1,0 +1,6 @@
+GA TODO:
+=========
+- Small Representation State needs to be used
+- Different Neural Network needs to be used
+- Start running experiments
+- REPORT!!!

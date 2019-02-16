@@ -1,0 +1,45 @@
+        // === linguistic variables and sets ===
+        // INPUTS
+        LinguisticVariable lvDeltaHealth( "DeltaHealth", 0.0, 1.0 );
+        // |__+++!*****|
+	    lvDeltaHealth.addFuzzySet( "High",	TrapezoidalFunction( 0.2, 0.5, TrapezoidalFunction::LeftEdge ) );
+    	
+	    LinguisticVariable lvHealth( "Health", 0, 1.0 );
+        // 
+	    lvHealth.addFuzzySet( "Danger",		TrapezoidalFunction( 0.3, 0.5, TrapezoidalFunction::RightEdge ) );
+
+        // OUTPUT
+        LinguisticVariable lvStance ( "Stance", 0.0, 1.0 );
+        // |****+!+____|
+        lvStance.addFuzzySet( "Attack",	    TrapezoidalFunction( 0.4, 0.6, TrapezoidalFunction::RightEdge ) );
+        // |____+!+****|
+        lvStance.addFuzzySet( "Retreat",	TrapezoidalFunction( 0.4, 0.6, TrapezoidalFunction::LeftEdge ) );
+
+
+        // addVariables
+        m_pFuzzySystem->addVariable( lvDeltaHealth );
+        m_pFuzzySystem->addVariable( lvHealth );
+        m_pFuzzySystem->addVariable( lvStance );
+
+
+        // RULES
+
+		// IF DeltaHealth IS High AND Health IS Danger THEN Stance IS Retreat
+        RuleStack rule1;
+        rule1.add( Clause( "DeltaHealth", "High" ) );
+        rule1.add( ANDOperator() );
+        rule1.add( Clause( "Health", "Danger" ) );
+		rule1.setThen( Clause( "Stance", "Retreat" ) );
+
+		/*
+		// IF DeltaHealth IS NOT High AND Health IS NOT Danger THEN Stance IS ATTACK
+        RuleStack rule2;
+        rule2.add( NotClause( "DeltaHealth", "High" ) );
+        rule2.add( ANDOperator() );
+        rule2.add( NotClause( "Health", "Danger" ) );
+		rule2.setThen( Clause( "Stance", "Attack" ) );
+		*/
+		// IF Health IS NOT Danger THEN Stance IS ATTACK
+        RuleStack rule2;
+        rule2.add( NotClause( "DeltaHealth", "High" ) );
+		rule2.setThen( Clause( "Stance", "Attack" ) );

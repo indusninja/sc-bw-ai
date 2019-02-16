@@ -1,0 +1,8 @@
+m_pNeuronsPerLayer[0] = m_nrOfStates; // input layer
+m_pNeuronsPerLayer[1] = (int)( m_nrOfStates ); // hidden layer
+m_pNeuronsPerLayer[2] = (int)( m_nrOfStates / 2.0f ); // hidden layer
+m_pNeuronsPerLayer[3] = 1; // output layer
+
+{7,7,3,1}
+
+// learning rate can be seen in the cvs and log

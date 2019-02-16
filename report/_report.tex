@@ -1,0 +1,341 @@
+\documentclass[conference]{IEEEtran}
+% If the IEEEtran.cls has not been installed into the LaTeX system files,
+% manually specify the path to it.  e.g.
+% \documentclass[conference]{./IEEEtran}
+
+% Add and required packages here
+\usepackage{graphicx,times,amsmath}
+\usepackage{verbatim} % for comments 
+\usepackage{url} % for urls
+\usepackage{rotating}% for text rotation
+\usepackage{multirow} % 
+
+\graphicspath{{images/}}   % where are the EPS images?
+
+
+% Correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor IEEEtran}
+
+% To create the author's affiliation portion using \thanks
+\IEEEoverridecommandlockouts
+
+\textwidth 178mm
+\textheight 239mm
+\oddsidemargin -7mm
+\evensidemargin -7mm
+\topmargin -6mm
+\columnsep 5mm
+
+\begin{document}
+
+% Project title: keep the \ \\ \LARGE\bf in it to leave enough margin.
+\title{\ \\ \LARGE\bf Starcraft: Evolving the Combat System}
+
+\author{David Schedl \\ dacs@itu.dk \and Prakash Prasad \\ prpr@itu.dk \and Kacper Kokoszka \\ kjak@itu.dk }
+
+% Uncomment out the following line for invited papers
+%\specialpapernotice{(Invited Paper)}
+
+% Make the title area
+\maketitle
+%-----------------------------
+%  ABSTRACT
+%-----------------------------
+%\begin{abstract}
+%\end{abstract}
+
+
+
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Introduction}
+\label{sec:Intro}
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+%\PARstart{I}{f}
+This report is an analysis of the various levels of combat involved in Starcraft: Brood War (SC)%
+\footnote{\url{http://us.blizzard.com/en-us/games/sc/}} %
+and how machine learning methodologies can be utilized to increase their efficiency.
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\subsection{Starcraft - The Game}
+SC is a Real-Time Strategy (RTS) game that has huge fan-fare because of highly diverse, yet balanced game mechanics. The game features three different races - \emph{Terran}, \emph{Protoss} and \emph{Zerg}, each with special abilities, strengths and weaknesses. The gameplay revolves around mechanics to collect resources, build buildings, and build fighting units. The goal of a play session is to destroy all buildings of the opponent with your offensive forces. The offensive units however are so finely tuned that a player can easily win a battle, if he has the correct unit composition to his opponent. There are multiple permutations of such strategies, a handful of the most popular and efficient of these are collected in on-line compendium by fans and pro-gamers (like Team Liquid Forums%
+\footnote{\url{http://wiki.teamliquid.net/starcraft/Strategy}}%
+).
+
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\subsection{Artificial Intelligence}
+%Competitions
+The level of meta-game that evolves from SC is also intriguing from the aspect of AI. In-fact, there are several competitions held for AI bots playing SC, such as \emph{CIG 2010 Starcraft RTS AI Competition}%
+\footnote{\url{http://ls11-www.cs.uni-dortmund.de/rts-competition/starcraft-cig2010}}%
+, which was part of the Computational Intelligence in Games Conference, 2010. Another one is the \emph{Starcraft AI competition}%
+\footnote{\url{http://eis.ucsc.edu/StarCraftAICompetition}}%
+, which was part of the program at the 2010 conference on Artificial Intelligence and Interactive Digital Entertainment (AIIDE 2010). The complex and concurrent levels of controls operating in the game require a plethora of AI techniques to work together at all times. In application, RTS bots have a reputation for being extremely predictable and hence, human players find them very easy to beat. The CIG Starcraft AI competition challenges such bots to fight each other in a "Tech-Limited" game. The ruleset stipulates that it is a \emph{Terran} Vs \emph{Terran} game with only a subset of units and buildings allowed to be built. In order for an AI bot to play the full game effectively, it needs to take several kinds of sub-actions that can make him superior to the opponent.
+
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\subsection{Levels of Control}
+%Levels of Controls
+Lets try to break down important actions that an AI bot would have to take into levels of control:
+\begin{description}
+  	\item[Micro (Micro-Management):] \hfill \\ 
+In SC terminology, \emph{Micro} refers to the capability of the human player to manage his units. These can be further classified into two types of micro objectives - offensive or non-offensive. Non-offensive micro is concerned with managing the units gathering minerals and on some occasions, using these units to block the opponent's offensive units to get an advantage. In SC, all offensive units are designed to do a higher than normal damage to particular units of the opponent. Skill in the game is attributed to finding out the unit composition that the opponent is going for, and then build the specific unit that can counter it. However, once these units have been build, they need to be ordered correctly to do the maximum damage.
+  	\item[Squad Management:] \hfill \\
+This is another dimension of the micro-management, which takes control of giving commands to a group of units in battle with an opposition squad. Managing the arrangement and attack/withdraw schema of the units in the squad can mean the difference between victory and losing. Moreover, efficient control also minimizes the loss of resources used in building these units.
+  	\item[Scouting:] \hfill \\
+As in any game, an important part of efficiently playing the game is knowledge about its state. In terms of SC, this involves knowing what the opponent is upto. The game implements a \emph{Fog of War} over areas that the player does not have units in. This means the player has to carry out scouting on the map over time to keep himself aware of the opponent's actions.
+	\item[Overall Strategy:] \hfill \\
+Once a player has information about the opponent's mineral harvesting capabilities, bases, building structures and units being generated, decisions need to be made such as which units to generate (which in turn needs to evaluate corresponding buildings needed to be built), expansion of bases (for higher mineral harvesting rate), attack timing, and path-finding (and blocking choke points for defense). These decisions keep the overall coherence of the bot's strategy. In SC lingo, this potion of the game is often classified as \emph{Macro}.
+\end{description}
+
+In this report we will focus on combat mechanics of Starcraft, where we analyze the game's levels of controls in terms of fighting, applicable only within the scope as defined under the CIG Starcraft AI Competition ruleset.
+
+
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\subsection{Units}
+%
+%	STUFF ABOUT UNITS
+%
+
+%
+% ---------
+\begin{table*}[htb]
+\caption{Unit statistics}
+\begin{center}
+% Table generated by Excel2LaTeX from sheet 'Sheet1'
+\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}
+\hline
+           &            &            &            &            &            &            &        \multicolumn{3}{|c|}{\bf Attack} \\
+\multicolumn{1}{|c|}{\bf Unit} &  
+\multicolumn{1}{|c|} {\bf HP} & 
+\multicolumn{1}{|c|}{\bf Armor} & 
+\multicolumn{1}{|c|}{\bf Size} & 
+\multicolumn{1}{|c|}{\bf Speed} & 
+\multicolumn{1}{|c|}{\bf Range} & 
+\multicolumn{1}{|c|}{\bf Cooldown} & 
+\multicolumn{1}{|c|}{\bf Damage} & 
+\multicolumn{1}{|c|}{\bf Times} & 
+\multicolumn{1}{|c|}{\bf Type} \\
+\hline
+{\it Marine} &         40 &          0 &      Small &          4.00 &          4 &         15 &          6 &          1 &     Normal \\
+\hline
+{\it Firebat} &         50 &          1 &      Small &          4.00 &          2 &         22 &          8 &          2 & Concussive \\
+\hline
+{\it Goliath} &        125 &          1 &      Large &       4.57&          6 &         22 &         12 &          1 &     Normal \\
+\hline
+\end{tabular}  
+\label{table:units}
+\end{center}
+\end{table*}
+% ---------
+%
+SC has different types of units each having different abilities. Table \ref{table:units} gives an overview of units we use in our tests. One of the important facts, which can be found in this table, is the damage a unit gives to another unit when it is attacking. Due to the balancing of the game, there are three different weapon types which cause a different amount of damage to units, depending on the size of the opponent unit. Table \ref{table:multiplier} shows these multipliers. To finally calculate the discount of hit points a unit receives the following equation:
+%	Potential Damage = (Damage - Armor) * Multiplier										
+\begin{align}
+	hp discount &= (damage \cdot times - armor) \cdot multiplier
+	\label{equation:damage}
+\end{align}
+must be applied, where the $damage$ is the {\bf Damage} value of the attacking unit in Table \ref{table:units}, $times$ is the {\bf Attack Times}  of it, $armor$ is the {\bf Armor} of the defending unit and $multiplier$ is the value from Table \ref{table:multiplier}. 
+To make this clearer we calculate a small example, where a {\it Firebat} shoots at a {\it Goliath}. A {\it Firebat} can shoot two times with a damage of $8$ which results in a damage sum of $16$. From that we have to subtract $1$ because the {\it Goliath} has an armor of $1$. The multiplier from Table \ref{table:multiplier} is $0.25$ because the {\it Firebat} has concussive damage and the {\it Goliath} has a large unit size. Therefore the final damage that the Firebat causes a Goliath is $3.75$, per attack.
+%(16-1)*0,25
+%
+
+% ---------
+\begin{table}
+\caption{Multiplier depending on weapon types and on the unit size}
+\begin{center}
+% Table generated by Excel2LaTeX from sheet 'Sheet1'
+\begin{tabular}{|l|r|r|r|}
+\hline
+\multicolumn{1}{|c|}{\bf Unit Size } & 
+\multicolumn{1}{|c|}{\bf Concussive } &    
+\multicolumn{1}{|c|}{\bf Normal } & 
+\multicolumn{1}{|c|}{\bf Explosive } \\
+\hline
+{\it Small} &          1.00 &          1.00 &        0.50 \\
+\hline
+{\it Medium} &        0.50 &          1.00 &       0.75 \\
+\hline
+{\it Large} &       0,25 &          1.00 &          1.00 \\
+\hline
+\end{tabular}  
+\label{table:multiplier}
+\end{center}
+\end{table}
+% ---------
+
+
+%
+%	STUFF ABOUT Broodwar API
+%
+Implementation of the bot in this project is done using BWAPI\footnote{\url{http://code.google.com/p/bwapi/}} %
+which is a free framework used to enable communication with SC (patch $1.16.1$). BWAPI provides functionalities to interact with the game like a human player, therefore it is suitable for developing AI bots. The API uses DLL injection to simulate the actions of a human player while reading all aspects of the game state. As with the language of the framework, all code for the project is written in C++. Additionally, BWSAL (Standard Add-on)\footnote{\url{http://http://code.google.com/p/bwsal/}} %
+and BWTA (Terrain Analyzer)\footnote{\url{http://code.google.com/p/bwta/}} %
+are used to enhance the information known about the game.
+% MORE? LESS?
+
+%/************************************************************************************************
+\begin{comment}
+%
+% THIS IS HOW YOU DEFINE A FIGURE - SAMPLE
+%%
+\begin{figure}[htp]
+\centerline{\includegraphics[width=1.0\columnwidth]{fig_gaComparison}}
+\caption{Caption of a figure}
+\label{fig:comparison}
+\end{figure}
+%%
+
+\end{comment}
+%************************************************************************************************/
+
+% CAN THIS SECTION BE ANY GOOD? OR IS IT USELESS?
+% A common Random player is presented to show the fighting mechanism
+% Main-Author: Prakash
+%
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Random Player}
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\subsection{One Unit Vs One Unit Combat} 
+To fulfill the offensive objectives for the game players fight their units against the opponent's. The procedural execution of a fighting loop is as follows:
+\begin{description}
+	\item[Unit Actions:] \hfill \\ 
+At any given point, a unit in SC can take any one of the following orders:
+\begin{itemize}
+\item Move
+\item Attack
+\item Hold Position
+\item Unit Specific Orders - These are special orders which are different for all units. For the sake of this project, we disregard these commands.
+\end{itemize}
+  	\item[Unit Attack Range:] \hfill \\ 
+A unit can only attack units within its weapon range.
+  	\item[Damage, Armor and Damage Multiplier:] \hfill \\
+Once in range, and only if the unit decides to attack, the damage multiplier logic explained in Table \ref{table:multiplier} is used to calculate the damage taken by the unit attacked and processed immediately.
+  	\item[Cooldown:] \hfill \\
+After each attack action, the unit needs to spend certain number of update cycles before it can attack again.
+	\item[Speed:] \hfill \\
+In case the unit decides to move, the unit can move at a specific speed.
+\end{description}
+In order to see the complexity and non-trivial nature of the task of commanding a unit in battle, a test case was established. In this scenario, an AI bot unit fights the SC game AI unit. The bot makes a random command decision on each frame out of the possible actions of either retreating away from the enemy or attacking the enemy.
+%%%
+
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\subsection{Results} 
+During the tests conducted with the model explained above, the random bot only won $1$ game out of $1000$ tests carried out. Unlike a stochastic game such as LUDO, where random chance controls the outcome of a game, SC is highly deterministic where a random bot cannot depend on chance to win a match. This goes to prove that a random bot is not effective at fighting in SC, and raises the need for better computational intelligence strategies for processing unit commands.
+%%%
+
+%
+% INPUT
+% everything related to Reinforcement Learning
+% Main-Author: Kacper
+%
+\input{_qlearning}
+
+%
+% INPUT
+% everything related to Genetic Algorithm
+% Main-Author: Prakash
+%
+\input{_ga}
+
+%
+% INPUT
+% everything related to FuzzySystem
+% Main-Author: David
+%
+\input{_fuzzy}
+
+
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Conclusion}
+%-------------------------------------------------------------------------------------------------------------------------------------------------\begin{table}
+\begin{table}
+  \caption{Table showing the number of shots that common units die in}
+   \begin{center}
+    % Table generated by Excel2LaTeX from sheet 'Sheet1'
+    \begin{tabular}{|c c|c|c|c|c|c|c|}
+    \hline
+    &\multicolumn{7}{c|}{\emph{Shooting Unit}} \\
+    &&\multicolumn{1}{|c|}{\begin{sideways}{\bf M} - Marine\end{sideways}} & 
+    \multicolumn{1}{|c|}{\begin{sideways}{\bf F} - Firebat\end{sideways}} & 
+    \multicolumn{1}{|c|}{\begin{sideways}{\bf G} - Goliath\end{sideways}} & 
+    \multicolumn{1}{|c|}{\begin{sideways}{\bf V} - Vulture\end{sideways}} & 
+    \multicolumn{1}{|c|}{\begin{sideways}{\bf D} - Dragoon\end{sideways}} & 
+    \multicolumn{1}{|c|}{\begin{sideways}{\bf Z} - Zealot\end{sideways}} \\
+    \cline{2-8}
+    \multirow{6}{*}{\begin{sideways}Unit being Shot\end{sideways}}
+    &\textbf{M} & $7$     & $3$     & $4$     & $2$     & $4$     & $3$ \\
+    \cline{2-8}
+    &\textbf{F} & $10$    & $4$     & $5$     & $3$     & $6$     & $4$ \\
+    \cline{2-8}
+    &\textbf{G} & $25$    & $34$    & $12$    & $27$    & $7$     & $9$ \\
+    \cline{2-8}
+    &\textbf{V} & $14$    & $10$    & $7$    & $9$     & $6$     & $5$ \\
+    \cline{2-8}
+    &\textbf{D} & $36$    & $48$    & $17$    & $38$    & $10$    & $12$ \\
+    \cline{2-8}
+    &\textbf{Z} & $32$    & $11$    & $15$    & $9$     & $17$    & $11$ \\
+    \hline
+    \end{tabular}
+    %\caption{{\bf M} - Marine, {\bf F} - Firebat, {\bf G} - Goliath, {\bf V} - Vulture, {\bf D} - Dragoon, {\bf Z} - Zealot}
+  \label{table:shotTable}
+ \end{center}
+\end{table}
+
+Looking at the Table \ref{table:shotTable}, we can analyze a big part of the problem facing combat management in SC. As is clear from that table, no two units have the same damage output to each other. For asymmetrical fights, the solution is not possible - Blizzard has balanced the game with particular emphasis of making units do not cost the same and by correlation, they're never the same in a fight. However for a symmetrical fight, i.e. both fighting units being the same, a bot mechanism can be formalized relatively simply. As demonstrated in Section \ref{section:RL}, the Q-Learning approach seems to learn a winning strategy. The epitome of this learning behavior was an experiment we carried out to see if a Marine could be trained to fight a Protoss Zealot.
+ Zealot has the same speed as the Marine, and does 10 times more damage to the Marine than vice versa. On paper the odds are stacked against the Marine. Except that the game (or we suspect the API) has a bug. At certain times, the zealot character freezes on the screen and does not respond to attacks on it. In such a case, the Marine can easily beat him. As a result of the rewarding mechanism, the bot zeroed in on how to trigger the bug, and the frequency of the bug as well as the winning rate of the bot increased.
+
+%Fuzzy
+The Fuzzy controlled squad management logic was found to result in a robust performance. Extending the representation and expanding the rules brings a lot of potential for this method. However, because of the non-evolutionary approach of the agent, it cannot be guaranteed that the set representation is the ultimate best. We would propose to utilize evolving fuzzy sets.
+
+Keeping in view the original aim of creating a unified controller to handle combat mechanics in SC, we suggest to build on the lessons learned about the problem space and a combined strategy utilizing the advantages of Fuzzy Logic and computational intelligence methodology be utilized.
+
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+\section*{Appendix}
+%-------------------------------------------------------------------------------------------------------------------------------------------------
+The following material is included on the DVD handed in with the project:
+\begin{itemize}
+\item Source Code for GA Bot
+\item Source Code for Reinforcement Learning bot
+\item Source Code for Fuzzy Logic, Squad playing bot
+\item Videos showing the functioning of each bot
+\item The Data for the presented statistics.
+\item Our testing maps and the API for running them.
+\end{itemize}
+
+%% Effort in case of time
+
+%% Which approach is good for what. 
+
+
+%\section*{Appendix}
+%Put your appendix here if you have any.
+
+
+% Trigger a \newpage just before a given reference number in order to
+% balance the columns on the last page.  Adjust the value as needed;
+% it may need to be readjusted if the document is modified later.
+%\IEEEtriggeratref{8}
+% The "triggered" command can be changed if desired:
+%\IEEEtriggercmd{\enlargethispage{-5in}}
+
+% The references section can either be generated by hand or by an
+% automatic tool like BibTeX.  If using BibTex, use the standard IEEEtran
+% bibliography style.
+%\bibliographystyle{IEEEtran.bst}
+%
+% The argument to \bibliography is/are the name(s) of your BibTeX file(s)
+% that contains string definitions and bibliography database(s).
+%\bibliography{IEEEabrv,SamplePaper}
+%
+% If you generate the bibliography by hand, or if you copy in the
+% resultant .bbl file, set the second argument of \begin to the number of
+% references in the bibliography (used to reserve space for the reference
+% number labels box).
+%%% Bibliography --------------------------------------------
+%\addcontentsline{toc}{chapter}{\bibname}
+%\bibliographystyle{babalpha} %options: babplain, babunsrt, bababbrv, babalpha, babamspl, -fl: first/lastname, -lf last/firstname
+\bibliographystyle{plain}
+\bibliography{references}
+\nocite{gaTroll, gpuGems2_fuzzy, nnintro, Moore_1996_2148, statistics, tdgammon, champandard02, readingsQLearning}
+%%%----------------------------------------------------------
+% That's all folks...
+\end{document}
